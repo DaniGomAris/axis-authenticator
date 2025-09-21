@@ -1,0 +1,36 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IntelliJ / Android Studio
+*.iml
+.idea/
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Mac/Windows
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.swp
+
+# Generated symbols and obfuscation
+app.*.symbols
+app.*.map.json
+
+# iOS
+**/ios/Flutter/.last_build_id
+
+# Android
+/android/app/debug
+/android/app/profile
+/android/app/release

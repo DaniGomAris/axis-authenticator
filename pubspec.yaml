@@ -1,0 +1,53 @@
+name: axis_authenticator
+description: "Axis Authenticator - Flutter project for Android & iOS."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+# -----------------------------
+# Principal dependencies
+# -----------------------------
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.2.2
+
+# -----------------------------
+# Develop dependencies
+# -----------------------------
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0 
+
+# -----------------------------
+# Dependency overrides 
+# -----------------------------
+dependency_overrides:
+  characters: ^1.4.1
+  material_color_utilities: ^0.13.0
+  meta: ^1.17.0
+  test_api: ^0.7.7
+
+# -----------------------------
+# Flutter configurations
+# -----------------------------
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/logo.png
+
+  # -------------------------
+  # Fonts personalizadas
+  # -------------------------
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: assets/fonts/Schyler-Regular.ttf
+  #       - asset: assets/fonts/Schyler-Italic.ttf
+  #         style: italic
