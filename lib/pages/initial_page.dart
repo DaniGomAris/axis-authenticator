@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'home_page.dart';
 import '../services/auth_service.dart';
 import 'forget_password_page.dart';
+import 'package:axis_authenticator/pages/home_page.dart';
+import 'dart:convert';
 
 class InitialPage extends StatefulWidget {
   const InitialPage({super.key});
@@ -42,7 +43,8 @@ class _InitialPageState extends State<InitialPage> {
 
   Future<void> _checkToken() async {
     final token = await storage.read(key: 'token');
-    if (token != null) {
+    final userJson = await storage.read(key: 'user');
+    if (token != null && userJson != null) {
       try {
         final result = await AuthService.verifyToken(token);
         final valid = result['valid'] as bool;
@@ -52,16 +54,23 @@ class _InitialPageState extends State<InitialPage> {
           if (newToken != token) {
             await storage.write(key: 'token', value: newToken);
           }
+
+          final user = Map<String, dynamic>.from(jsonDecode(userJson));
+
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => HomePage(token: newToken)),
+            MaterialPageRoute(
+              builder: (_) => HomePage(token: newToken, user: user),
+            ),
           );
           return;
         } else {
           await storage.delete(key: 'token');
+          await storage.delete(key: 'user');
         }
       } catch (_) {
         await storage.delete(key: 'token');
+        await storage.delete(key: 'user');
       }
     }
     setState(() {
@@ -90,12 +99,16 @@ class _InitialPageState extends State<InitialPage> {
       );
 
       final token = data["token"];
+      final user = data["user"];
       await storage.write(key: 'token', value: token);
+      await storage.write(key: 'user', value: jsonEncode(user)); // guardar usuario
 
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomePage(token: token)),
+          MaterialPageRoute(
+            builder: (_) => HomePage(token: token, user: user),
+          ),
         );
       }
     } catch (e) {
@@ -143,7 +156,6 @@ class _InitialPageState extends State<InitialPage> {
           // Contenido principal
           Column(
             children: [
-              // Logo SIEMPRE visible
               Align(
                 alignment: Alignment.topCenter,
                 child: Image.asset(
@@ -152,8 +164,6 @@ class _InitialPageState extends State<InitialPage> {
                   height: 150,
                 ),
               ),
-
-              // Texto animado al mostrar login
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
@@ -202,7 +212,6 @@ class _InitialPageState extends State<InitialPage> {
             ],
           ),
 
-
           // Recuadro blanco animado
           AnimatedPositioned(
             duration: const Duration(milliseconds: 400),
@@ -210,7 +219,7 @@ class _InitialPageState extends State<InitialPage> {
             left: 0,
             right: 0,
             bottom: isLoginVisible ? 0 : -420,
-            height: 420,
+            height: 390,
             child: Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -238,21 +247,16 @@ class _InitialPageState extends State<InitialPage> {
                             child: GestureDetector(
                               onTap: () => setState(() => isLogin = true),
                               child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: isLogin
-                                      ? Colors.white
-                                      : Colors.transparent,
+                                  color: isLogin ? Colors.white : Colors.transparent,
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
                                   "Login",
                                   style: TextStyle(
-                                    color: isLogin
-                                        ? Colors.black
-                                        : Colors.grey,
+                                    color: isLogin ? Colors.black : Colors.grey,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -262,19 +266,15 @@ class _InitialPageState extends State<InitialPage> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     // Email
                     TextField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: "Email Address",
-                        hintStyle: const TextStyle(
-                            color: Color(0xFFacacac), fontSize: 14),
-                        prefixIcon: const Icon(Icons.email_outlined,
-                            color: Color(0xFF6e947c)),
+                        hintStyle: const TextStyle(color: Color(0xFFacacac), fontSize: 14),
+                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6e947c)),
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -283,22 +283,15 @@ class _InitialPageState extends State<InitialPage> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(13),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFeeeeee),
-                            width: 1.5,
-                          ),
+                          borderSide: const BorderSide(color: Color(0xFFeeeeee), width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(13),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFeeeeee),
-                            width: 1.5,
-                          ),
+                          borderSide: const BorderSide(color: Color(0xFFeeeeee), width: 1.5),
                         ),
                       ),
                     ),
                     const SizedBox(height: 14),
-
                     // Password
                     TextField(
                       controller: passwordController,
@@ -306,21 +299,16 @@ class _InitialPageState extends State<InitialPage> {
                       obscuringCharacter: '•',
                       decoration: InputDecoration(
                         hintText: "Password",
-                        hintStyle: const TextStyle(
-                            color: Color(0xFFacacac), fontSize: 14),
-                        prefixIcon: const Icon(Icons.lock_outline,
-                            color: Color(0xFF6e947c)),
+                        hintStyle: const TextStyle(color: Color(0xFFacacac), fontSize: 14),
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6e947c)),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
                             color: Colors.black54,
                             size: 20,
                           ),
                           onPressed: () {
-                            setState(
-                                () => _obscurePassword = !_obscurePassword);
+                            setState(() => _obscurePassword = !_obscurePassword);
                           },
                         ),
                         filled: true,
@@ -331,29 +319,21 @@ class _InitialPageState extends State<InitialPage> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(13),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFeeeeee),
-                            width: 1.5,
-                          ),
+                          borderSide: const BorderSide(color: Color(0xFFeeeeee), width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(13),
-                          borderSide: const BorderSide(
-                            color: Color(0xFFeeeeee),
-                            width: 1.5,
-                          ),
+                          borderSide: const BorderSide(color: Color(0xFFeeeeee), width: 1.5),
                         ),
                       ),
                     ),
-
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (_) => const ForgetPasswordPage()),
+                            MaterialPageRoute(builder: (_) => const ForgetPasswordPage()),
                           );
                         },
                         child: const Text(
@@ -362,13 +342,10 @@ class _InitialPageState extends State<InitialPage> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 10),
                     if (errorMessage != null)
-                      Text(errorMessage!,
-                          style: const TextStyle(color: Colors.red)),
+                      Text(errorMessage!, style: const TextStyle(color: Colors.red)),
                     const SizedBox(height: 10),
-
                     // Botón login
                     isLoading
                         ? const CircularProgressIndicator()
@@ -377,8 +354,7 @@ class _InitialPageState extends State<InitialPage> {
                             child: ElevatedButton(
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 20),
+                                padding: const EdgeInsets.symmetric(vertical: 20),
                                 backgroundColor: const Color(0xFF6e947c),
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
@@ -387,9 +363,7 @@ class _InitialPageState extends State<InitialPage> {
                               ),
                               child: const Text(
                                 "Login",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -398,7 +372,6 @@ class _InitialPageState extends State<InitialPage> {
               ),
             ),
           ),
-
           // Botón "Get started"
           AnimatedPositioned(
             duration: const Duration(milliseconds: 800),
@@ -423,10 +396,7 @@ class _InitialPageState extends State<InitialPage> {
                   ),
                   child: const Text(
                     "Get started",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
