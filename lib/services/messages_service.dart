@@ -17,6 +17,8 @@ class MessagesService {
   // Twilio / OTP
   static const String otpSendFailed = "Error al enviar el OTP";
   static const String otpVerifyFailed = "Error al verificar el OTP";
+  static const String otpSent = "OTP enviado correctamente";
+  static const String otpVerified = "OTP verificado correctamente";
 
   // User / Password
   static const String passwordChangeFailed = "No se pudo cambiar la contraseña";
@@ -32,7 +34,5 @@ class MessagesService {
   static const String logoutSuccess = "Logout exitoso";
   static const String qrGenerated = "QR generado correctamente";
   static const String qrValidated = "QR validado correctamente";
-  static const String otpSent = "OTP enviado correctamente";
-  static const String otpVerified = "OTP verificado correctamente";
   static const String passwordChanged = "Contraseña actualizada correctamente";
 }

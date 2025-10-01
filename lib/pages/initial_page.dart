@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/auth_service.dart';
-import 'forget_password_page.dart';
-import 'package:axis_authenticator/pages/home_page.dart';
+import '../services/user_service.dart';
+import 'home_page.dart';
 import 'dart:convert';
 
 class InitialPage extends StatefulWidget {
@@ -15,10 +15,14 @@ class InitialPage extends StatefulWidget {
 class _InitialPageState extends State<InitialPage> {
   bool isLoginVisible = false;
   bool isLogin = true;
+  bool showForgotPassword = false;
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final forgotController = TextEditingController();
+
   bool isLoading = false;
+  bool isSendingOtp = false;
   String? errorMessage;
   bool checkingToken = true;
 
@@ -30,6 +34,7 @@ class _InitialPageState extends State<InitialPage> {
     super.initState();
     emailController.addListener(_clearError);
     passwordController.addListener(_clearError);
+    forgotController.addListener(_clearError);
     _checkToken();
   }
 
@@ -122,10 +127,50 @@ class _InitialPageState extends State<InitialPage> {
     }
   }
 
+  void _sendOtp() async {
+    if (forgotController.text.trim().isEmpty) {
+      setState(() {
+        errorMessage = "Ingrese su teléfono o correo";
+      });
+      return;
+    }
+
+    setState(() {
+      isSendingOtp = true;
+      errorMessage = null;
+    });
+
+    try {
+      final success = await UserService.changePassword(
+        forgotController.text.trim(),
+        "temporaryPassword123", // O flujo OTP
+        "temporaryPassword123",
+      );
+
+      if (success && mounted) {
+        setState(() {
+          showForgotPassword = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("OTP enviado correctamente")),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+      });
+    } finally {
+      setState(() {
+        isSendingOtp = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    forgotController.dispose();
     super.dispose();
   }
 
@@ -140,12 +185,12 @@ class _InitialPageState extends State<InitialPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Fondo negro
           GestureDetector(
             onTap: () {
-              if (isLoginVisible) {
+              if (isLoginVisible || showForgotPassword) {
                 setState(() {
                   isLoginVisible = false;
+                  showForgotPassword = false;
                 });
                 FocusScope.of(context).unfocus();
               }
@@ -153,7 +198,6 @@ class _InitialPageState extends State<InitialPage> {
             child: Container(color: const Color(0xFF121416)),
           ),
 
-          // Contenido principal
           Column(
             children: [
               Align(
@@ -212,7 +256,7 @@ class _InitialPageState extends State<InitialPage> {
             ],
           ),
 
-          // Recuadro blanco animado
+          // Recuadro login
           AnimatedPositioned(
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeOut,
@@ -229,7 +273,6 @@ class _InitialPageState extends State<InitialPage> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    // Toggle Login
                     Container(
                       width: 180,
                       padding: const EdgeInsets.all(4),
@@ -267,7 +310,6 @@ class _InitialPageState extends State<InitialPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Email
                     TextField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -292,7 +334,6 @@ class _InitialPageState extends State<InitialPage> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // Password
                     TextField(
                       controller: passwordController,
                       obscureText: _obscurePassword,
@@ -331,10 +372,7 @@ class _InitialPageState extends State<InitialPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const ForgetPasswordPage()),
-                          );
+                          setState(() => showForgotPassword = true);
                         },
                         child: const Text(
                           "Forgot Password?",
@@ -346,7 +384,6 @@ class _InitialPageState extends State<InitialPage> {
                     if (errorMessage != null)
                       Text(errorMessage!, style: const TextStyle(color: Colors.red)),
                     const SizedBox(height: 10),
-                    // Botón login
                     isLoading
                         ? const CircularProgressIndicator()
                         : SizedBox(
@@ -372,6 +409,97 @@ class _InitialPageState extends State<InitialPage> {
               ),
             ),
           ),
+
+          // Modal Forgot Password
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOut,
+            left: 24,
+            right: 24,
+            bottom: showForgotPassword ? 150 : -400,
+            height: 300,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    "Olvide contraseña",
+                    style: TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: forgotController,
+                    decoration: InputDecoration(
+                      hintText: "Ingresa tu numero de telefono",
+                      filled: true,
+                      fillColor: const Color(0xFFf5f5f5),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  isSendingOtp
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          onPressed: _sendOtp,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            backgroundColor: const Color(0xFF6e947c),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text(
+                            "Enviar SMS",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                  SizedBox(height: 15),
+                  OutlinedButton(
+                    onPressed: () {
+                      setState(() => showForgotPassword = false);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFeeeeee), width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    ),
+                    child: const Text(
+                      "Cancelar",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
           // Botón "Get started"
           AnimatedPositioned(
             duration: const Duration(milliseconds: 800),
