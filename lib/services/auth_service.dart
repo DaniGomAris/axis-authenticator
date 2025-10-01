@@ -15,7 +15,7 @@ class AuthService {
       defaultErrorMessage: MessagesService.loginFailed,
     );
   }
-
+  
   // Logout
   static Future<Map<String, dynamic>> logout(String token) async {
     final url = "${Constants.baseUrl}/auth/logout";

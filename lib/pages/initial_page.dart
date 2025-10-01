@@ -101,7 +101,7 @@ class _InitialPageState extends State<InitialPage> {
       final token = data["token"];
       final user = data["user"];
       await storage.write(key: 'token', value: token);
-      await storage.write(key: 'user', value: jsonEncode(user)); // guardar usuario
+      await storage.write(key: 'user', value: jsonEncode(user));
 
       if (mounted) {
         Navigator.pushReplacement(
