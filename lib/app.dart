@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'features/auth/presentation/initial_page.dart';
+import 'features/auth/presentation/pages/initial_page.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

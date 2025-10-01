@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../services/auth_service.dart';
-import '../services/user_service.dart';
-import 'home_page.dart';
+import '../../data/auth_service.dart';
+import '../../../user/data/user_service.dart';
+import '../../../home/presentation/pages/home_page.dart';
 import 'dart:convert';
 
 class InitialPage extends StatefulWidget {
@@ -141,10 +141,8 @@ class _InitialPageState extends State<InitialPage> {
     });
 
     try {
-      final success = await UserService.changePassword(
+      final success = await UserService.sendOtp(
         forgotController.text.trim(),
-        "temporaryPassword123", // O flujo OTP
-        "temporaryPassword123",
       );
 
       if (success && mounted) {
@@ -165,6 +163,7 @@ class _InitialPageState extends State<InitialPage> {
       });
     }
   }
+
 
   @override
   void dispose() {
@@ -195,7 +194,7 @@ class _InitialPageState extends State<InitialPage> {
                 FocusScope.of(context).unfocus();
               }
             },
-            child: Container(color: const Color(0xFF121416)),
+            child: Container(color: const Color(0xFF0b1014)),
           ),
 
           Column(

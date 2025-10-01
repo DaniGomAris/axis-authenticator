@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../utils/constants.dart';
-import 'messages_service.dart';
+import '../../../../core/utils/constants.dart';
+import '../../../core/services/messages_service.dart';
 
 class TwilioService {
   // Enviar OTP

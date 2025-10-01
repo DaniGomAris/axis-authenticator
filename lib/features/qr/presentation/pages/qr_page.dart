@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:http/http.dart' as http;
-import '../utils/constants.dart';
+import '../../../../core/utils/constants.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 
 class QRPage extends StatefulWidget {
@@ -32,7 +32,6 @@ class _QRPageState extends State<QRPage> {
   bool showCompanyName = true;
   String? errorMessage;
 
-  // Mensaje temporal de 5 segundos
   void _showTemporaryMessage(String message) {
     setState(() {
       errorMessage = message;
@@ -46,7 +45,6 @@ class _QRPageState extends State<QRPage> {
     });
   }
 
-  // Función centralizada para manejar el "back"
   void _handleBackAction() {
     if (qrValue != null) {
       _showTemporaryMessage("No puedes salir hasta que el QR expire");
@@ -137,7 +135,7 @@ class _QRPageState extends State<QRPage> {
         return qrValue == null;
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF121416),
+        backgroundColor: const Color(0xFF0b1014),
         body: Stack(
           children: [
             // Flecha para volver a home
@@ -150,7 +148,7 @@ class _QRPageState extends State<QRPage> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6e947c),
+                    color: const Color(0xFF0b1014),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -187,7 +185,7 @@ class _QRPageState extends State<QRPage> {
                   widthFactor: progress,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6e947c),
+                      color: const Color(0xFF085f5d),
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
@@ -195,7 +193,7 @@ class _QRPageState extends State<QRPage> {
               ),
             ),
 
-            // QR + mensaje temporal
+            // QR y mensaje de error
             Positioned(
               top: 170,
               left: screenWidth / 2 - 175,
@@ -261,7 +259,7 @@ class _QRPageState extends State<QRPage> {
                                             height: 50,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 5,
-                                              color: Color(0xFF6e947c),
+                                              color: Color(0xFF085f5d),
                                             ),
                                           )
                                         : const Icon(
@@ -329,47 +327,44 @@ class _QRPageState extends State<QRPage> {
               ),
             ),
 
-            // Barra verde con nombre o rol
+            // Barra con nombre o rol
             Positioned(
               top: 710,
-              left: 0,
-              right: 0,
+              left: 15,
+              right: 15,
               child: Container(
                 height: 60,
-                color: Colors.white,
-                child: Stack(
-                  alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF085f5d), 
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      height: 60,
-                      color: const Color(0xFF6e947c),
-                      alignment: Alignment.center,
-                      child: Text(
-                        showCompanyName
-                            ? (widget.company['name'] ?? '')
-                            : (widget.user['role'] ?? ''),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_left, color: Colors.white, size: 40),
+                      onPressed: () => _toggleMode(!showCompanyName),
+                    ),
+                    Text(
+                      showCompanyName
+                          ? (widget.company['name'] ?? '')
+                          : (widget.user['role'] ?? ''),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Positioned(
-                      left: 10,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_left,
-                            color: Colors.white, size: 40),
-                        onPressed: () => _toggleMode(!showCompanyName),
-                      ),
-                    ),
-                    Positioned(
-                      right: 10,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_right,
-                            color: Colors.white, size: 40),
-                        onPressed: () => _toggleMode(!showCompanyName),
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_right, color: Colors.white, size: 40),
+                      onPressed: () => _toggleMode(!showCompanyName),
                     ),
                   ],
                 ),

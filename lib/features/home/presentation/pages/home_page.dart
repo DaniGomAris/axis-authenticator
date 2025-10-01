@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'qr_page.dart';
+import '../../../qr/presentation/pages/qr_page.dart';
 
 class HomePage extends StatelessWidget {
   final String token;
@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
     final companies = user['companies'] as List<dynamic>;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121416),
+      backgroundColor: const Color(0xFF0b1014),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
@@ -25,20 +25,22 @@ class HomePage extends StatelessWidget {
                 height: 150,
               ),
             ),
-            const Text(
-              'Selecciona tu empresa',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: const Text(
+                'Selecciona tu empresa',
+                style: TextStyle(
+                  color: Color(0xFF085f5d),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20), // espacio antes de la lista
+            const SizedBox(height: 10), 
             Expanded(
               child: ListView.separated(
                 itemCount: companies.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 5),
+                separatorBuilder: (_, __) => const SizedBox(height: 15),
                 itemBuilder: (context, index) {
                   final company = companies[index];
                   return GestureDetector(
@@ -59,7 +61,7 @@ class HomePage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           vertical: 24, horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Color(0xFF6e947c),
+                        color: Color(0xFF25292e),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -76,15 +78,13 @@ class HomePage extends StatelessWidget {
                             company['name'],
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 18,
                             ),
                           ),
-                          const Text(
-                            '>', // Flecha decorativa simple
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
+                          const Icon(
+                            Icons.arrow_forward,
+                            color: Color(0xFF085f5d),
+                            size: 22,
                           ),
                         ],
                       ),
