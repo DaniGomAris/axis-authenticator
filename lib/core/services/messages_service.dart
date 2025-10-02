@@ -1,3 +1,4 @@
+// Servicio para mostrar errores del back
 class MessagesService {
   // Errores de conexión o servidor
   static const String networkError = "No se pudo conectar con el servidor";

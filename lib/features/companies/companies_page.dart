@@ -1,26 +1,63 @@
 import 'package:flutter/material.dart';
 import '../qr/qr_page.dart';
 import '../../core/widgets/side_menu.dart';
+import 'widgets/companies_list.dart';
+import 'widgets/top_bar.dart';
+import 'widgets/company_search_bar.dart';
+import 'widgets/empty_state.dart';
 
-class CompaniesPage extends StatelessWidget {
-  final String token;
-  final Map<String, dynamic> user;
+// Pantalla principal de empresas
+class CompaniesPage extends StatefulWidget {
+  final String token; // Token del usuario
+  final Map<String, dynamic> user; // Datos del usuario
 
   const CompaniesPage({super.key, required this.token, required this.user});
 
   @override
-  Widget build(BuildContext context) {
-    final companies = user['companies'] as List<dynamic>;
+  State<CompaniesPage> createState() => _CompaniesPageState();
+}
 
+class _CompaniesPageState extends State<CompaniesPage> {
+  late List<Map<String, dynamic>> companies; // Lista completa de empresas
+  late List<Map<String, dynamic>> filteredCompanies; // Lista filtrada por busqueda
+  final searchController = TextEditingController(); // Controlador del campo de busqueda
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializa las listas con los datos del usuario
+    companies = List<Map<String, dynamic>>.from(widget.user['companies'] ?? []);
+    filteredCompanies = List.from(companies);
+  }
+
+  // Filtra las empresas por el texto ingresado
+  void _filterCompanies(String query) {
+    final lowerQuery = query.toLowerCase();
+    setState(() {
+      filteredCompanies = companies
+          .where((c) => (c['name'] as String).toLowerCase().contains(lowerQuery))
+          .toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0b1014),
       body: CustomSideMenu(
-        token: token,
+        token: widget.token,
         menuWidth: 280,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
+              // Logo superior centrado
               Align(
                 alignment: Alignment.topCenter,
                 child: Image.asset(
@@ -29,73 +66,39 @@ class CompaniesPage extends StatelessWidget {
                   height: 150,
                 ),
               ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: const Text(
-                  'Tus empresas',
-                  style: TextStyle(
-                    color: Color(0xFF085f5d),
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 5),
+
+              // Titulo de la pantalla
+              const TopBar(title: "Tus empresas"),
               const SizedBox(height: 10),
+
+              // Barra de busqueda
+              CompanySearchBar(
+                controller: searchController,
+                onChanged: _filterCompanies,
+              ),
+              const SizedBox(height: 20),
+
+              // Lista de empresas o estado vacio
               Expanded(
-                child: ListView.separated(
-                  itemCount: companies.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 15),
-                  itemBuilder: (context, index) {
-                    final company = companies[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => QRPage(
-                              token: token,
-                              user: user,
-                              company: company,
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 24, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF25292e),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 6,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              company['name'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
+                child: filteredCompanies.isEmpty
+                    ? const EmptyState(message: "No tienes empresas registradas")
+                    : CompaniesList(
+                        companies: filteredCompanies,
+                        onCompanyTap: (company) {
+                          // Al tocar una empresa, abrir QRPage
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => QRPage(
+                                token: widget.token,
+                                user: widget.user,
+                                company: company,
                               ),
                             ),
-                            const Icon(
-                              Icons.arrow_forward,
-                              color: Color(0xFF085f5d),
-                              size: 22,
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
             ],
           ),

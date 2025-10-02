@@ -3,8 +3,11 @@ import 'package:http/http.dart' as http;
 import '../../../../core/utils/constants.dart';
 import '../../../core/services/messages_service.dart';
 
+// Servicio para manejo de OTP via Twilio
 class TwilioService {
-  // Enviar OTP
+
+  // Envia un OTP al telefono proporcionado
+  // Retorna un mapa con exito y mensaje
   static Future<Map<String, dynamic>> sendOtp(String phone) async {
     final url = Uri.parse("${Constants.baseUrl}/twilio/send-otp");
 
@@ -12,7 +15,7 @@ class TwilioService {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"phone": phone}),
+        body: jsonEncode({"phone": phone}), // Envia el telefono al backend
       );
 
       if (response.statusCode == 200) {
@@ -29,7 +32,7 @@ class TwilioService {
         };
       }
     } catch (e) {
-      print("Error sending OTP: $e");
+      print("Error sending OTP: $e"); // Log de error en consola
       return {
         "success": false,
         "message": MessagesService.networkError
@@ -37,7 +40,8 @@ class TwilioService {
     }
   }
 
-  // Verificar OTP
+  // Verifica un OTP enviado al telefono
+  // Retorna un mapa con exito y mensaje
   static Future<Map<String, dynamic>> verifyOtp(String phone, String otp) async {
     final url = Uri.parse("${Constants.baseUrl}/twilio/verify-otp");
 
@@ -45,7 +49,7 @@ class TwilioService {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"phone": phone, "otp": otp}),
+        body: jsonEncode({"phone": phone, "otp": otp}), // Envia telefono y OTP al backend
       );
 
       if (response.statusCode == 200) {
@@ -62,7 +66,7 @@ class TwilioService {
         };
       }
     } catch (e) {
-      print("Error verifying OTP: $e");
+      print("Error verifying OTP: $e"); // Log de error en consola
       return {
         "success": false,
         "message": MessagesService.networkError

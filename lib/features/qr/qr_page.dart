@@ -1,16 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:barcode_widget/barcode_widget.dart';
 import '../../core/utils/constants.dart';
+import 'widgets/qr_card.dart';
+import 'widgets/qr_progress_bar.dart';
+import 'widgets/qr_user_info.dart';
+import 'widgets/qr_toggle_bar.dart';
+import 'widgets/user_barcode.dart';
 
+// Pantalla de generacion y visualizacion de QR
 class QRPage extends StatefulWidget {
-  final String token;
-  final Map<String, dynamic> user;
-  final Map<String, dynamic> company;
+  final String token; // Token de autenticacion del usuario
+  final Map<String, dynamic> user; // Datos del usuario
+  final Map<String, dynamic> company; // Empresa seleccionada
 
   const QRPage({
     super.key,
@@ -24,35 +27,32 @@ class QRPage extends StatefulWidget {
 }
 
 class _QRPageState extends State<QRPage> {
-  String? qrValue;
-  bool isLoading = false;
-  Timer? qrTimer;
-  Timer? progressTimer;
-  double progress = 1.0;
-  bool showCompanyName = true;
-  String? errorMessage;
+  String? qrValue; // Valor actual del QR
+  bool isLoading = false; // Indica si se esta generando un QR
+  Timer? progressTimer; // Temporizador para la expiracion del QR
+  double progress = 1.0; // Progreso de la barra (0.0 a 1.0)
+  bool showCompanyName = true; // Alterna entre mostrar nombre de empresa o rol del usuario
+  String? errorMessage; // Mensaje de error temporal
 
+  // Muestra un mensaje temporal en pantalla
   void _showTemporaryMessage(String message) {
-    setState(() {
-      errorMessage = message;
-    });
+    setState(() => errorMessage = message);
     Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          errorMessage = null;
-        });
-      }
+      if (mounted) setState(() => errorMessage = null);
     });
   }
 
+  // Maneja el boton de volver
   void _handleBackAction() {
     if (qrValue != null) {
+      // Evita salir si hay un QR activo
       _showTemporaryMessage("No puedes salir hasta que el QR expire");
     } else {
       Navigator.pop(context);
     }
   }
 
+  // Genera un QR llamando al backend
   Future<void> _generateQR() async {
     setState(() {
       isLoading = true;
@@ -72,29 +72,24 @@ class _QRPageState extends State<QRPage> {
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         setState(() {
-          qrValue = body['lGUID'];
-          progress = 1.0;
+          qrValue = body['lGUID']; // Guardar valor del QR
+          progress = 1.0; // Reinicia barra de progreso
         });
 
-        qrTimer?.cancel();
+        // Cancelar temporizador previo si existe
         progressTimer?.cancel();
 
-        qrTimer = Timer(const Duration(seconds: 60), () {
-          setState(() {
-            qrValue = null;
-            progress = 0.0;
-          });
-        });
+        // Inicia temporizador de 1 minuto para expirar QR
+        const totalTime = 60 * 1000; 
+        final startTime = DateTime.now();
 
-        const totalTime = 60 * 1000;
-        int elapsed = 0;
-        progressTimer =
-            Timer.periodic(const Duration(milliseconds: 100), (timer) {
-          elapsed += 100;
+        progressTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+          final elapsed = DateTime.now().difference(startTime).inMilliseconds;
           setState(() {
-            progress = 1 - (elapsed / totalTime);
+            progress = 1 - (elapsed / totalTime); // Actualiza barra
             if (progress <= 0) {
               progress = 0;
+              qrValue = null; // QR expira
               timer.cancel();
             }
           });
@@ -106,22 +101,18 @@ class _QRPageState extends State<QRPage> {
     } catch (e) {
       _showTemporaryMessage("Error: $e");
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
-  void _toggleMode(bool toCompany) {
-    setState(() {
-      showCompanyName = toCompany;
-    });
+  // Alterna entre mostrar nombre de empresa o rol del usuario
+  void _toggleMode() {
+    setState(() => showCompanyName = !showCompanyName);
   }
 
   @override
   void dispose() {
-    qrTimer?.cancel();
-    progressTimer?.cancel();
+    progressTimer?.cancel(); // Cancela temporizador al cerrar pantalla
     super.dispose();
   }
 
@@ -130,6 +121,7 @@ class _QRPageState extends State<QRPage> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return WillPopScope(
+      // Previene salir si QR activo
       onWillPop: () async {
         _handleBackAction();
         return qrValue == null;
@@ -138,8 +130,7 @@ class _QRPageState extends State<QRPage> {
         backgroundColor: const Color(0xFF0b1014),
         body: Stack(
           children: [
-            
-            // Flecha para volver a home
+            // Boton para volver
             Positioned(
               top: 50,
               left: 20,
@@ -152,15 +143,12 @@ class _QRPageState extends State<QRPage> {
                     color: const Color(0xFF0b1014),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.chevron_left,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                  child: const Icon(Icons.chevron_left, color: Colors.white, size: 30),
                 ),
               ),
             ),
 
+            // Logo superior centrado
             Align(
               alignment: Alignment.topCenter,
               child: Image.asset(
@@ -170,28 +158,11 @@ class _QRPageState extends State<QRPage> {
               ),
             ),
 
-            // Barra de progreso
+            // Barra de progreso del QR
             Positioned(
               top: 150,
               left: screenWidth / 2 - 110,
-              child: Container(
-                height: 3,
-                width: 220,
-                alignment: Alignment.centerLeft,
-                decoration: BoxDecoration(
-                  color: Color(0xFF25292e),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: FractionallySizedBox(
-                  widthFactor: progress,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF085f5d),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                ),
-              ),
+              child: QRProgressBar(progress: progress),
             ),
 
             // QR y mensaje de error
@@ -200,89 +171,17 @@ class _QRPageState extends State<QRPage> {
               left: screenWidth / 2 - 175,
               child: Column(
                 children: [
-                  Container(
-                    width: 350,
-                    height: 350,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(60),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: qrValue != null
-                        ? Center(
-                            child: QrImageView(
-                              data: qrValue!,
-                              version: QrVersions.auto,
-                              size: 310,
-                            ),
-                          )
-                        : Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
-                                child: Stack(
-                                  children: [
-                                    QrImageView(
-                                      data: "placeholder-qr",
-                                      version: QrVersions.auto,
-                                      size: 310,
-                                      foregroundColor: Colors.grey[400],
-                                    ),
-                                    Positioned.fill(
-                                      child: BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                            sigmaX: 6, sigmaY: 6),
-                                        child: Container(
-                                            color:
-                                                Colors.white.withOpacity(0)),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              InkWell(
-                                onTap: isLoading ? null : _generateQR,
-                                borderRadius: BorderRadius.circular(50),
-                                child: SizedBox(
-                                  width: 70,
-                                  height: 70,
-                                  child: Center(
-                                    child: isLoading
-                                        ? const SizedBox(
-                                            width: 50,
-                                            height: 50,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 5,
-                                              color: Color(0xFF085f5d),
-                                            ),
-                                          )
-                                        : const Icon(
-                                            Icons.autorenew,
-                                            size: 80,
-                                            color: Colors.black,
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                  QRCard(
+                    qrValue: qrValue,
+                    isLoading: isLoading,
+                    onGenerate: _generateQR,
                   ),
                   if (errorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 16,
-                        ),
+                        style: const TextStyle(color: Colors.red, fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -290,101 +189,29 @@ class _QRPageState extends State<QRPage> {
               ),
             ),
 
-            // Nombre del usuario
+            // Informacion del usuario
             Positioned(
               top: 600,
               left: 0,
               right: 0,
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Text(
-                  "${widget.user['name'] ?? ''} ${widget.user['last_name1'] ?? ''} ${widget.user['last_name2'] ?? ''}"
-                      .trim(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              child: QRUserInfo(user: widget.user),
             ),
 
-            // ID del usuario
-            Positioned(
-              top: 640,
-              left: 0,
-              right: 0,
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Text(
-                  "CC: ${widget.user['_id']}",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-
-            // Barra con nombre o rol
+            // Barra toggle nombre de empresa / rol usuario
             Positioned(
               top: 710,
               left: 15,
               right: 15,
-              child: Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF085f5d), 
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 6,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chevron_left, color: Colors.white, size: 30),
-                      onPressed: () => _toggleMode(!showCompanyName),
-                    ),
-                    Text(
-                      showCompanyName
-                          ? (widget.company['name'] ?? '')
-                          : (widget.user['role'] ?? ''),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.chevron_right, color: Colors.white, size: 30),
-                      onPressed: () => _toggleMode(!showCompanyName),
-                    ),
-                  ],
-                ),
+              child: QRToggleBar(
+                showCompanyName: showCompanyName,
+                companyName: widget.company['name'] ?? '',
+                userRole: widget.user['role'] ?? '',
+                onToggle: _toggleMode,
               ),
             ),
 
-            // Codigo de barras
-            Positioned(
-              top: 820,
-              left: screenWidth / 2 - 150,
-              child: BarcodeWidget(
-                barcode: Barcode.code128(),
-                data: widget.user['_id'],
-                width: 300,
-                height: 50,
-                drawText: false,
-                color: Colors.black,
-              ),
-            ),
+            // Codigo de barras con ID del usuario
+            UserBarcode(userId: widget.user['_id']),
           ],
         ),
       ),
