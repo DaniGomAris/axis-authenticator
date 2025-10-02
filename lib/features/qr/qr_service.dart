@@ -1,6 +1,6 @@
-import '../../../core/utils/constants.dart';
-import '../../../core/services/base_service.dart';
-import '../../../core/services/messages_service.dart';
+import '../../core/utils/constants.dart';
+import '../../core/services/base_service.dart';
+import '../../core/services/messages_service.dart';
 
 class QrService {
   static Future<String> generateQr(String token, {String? companyId}) async {

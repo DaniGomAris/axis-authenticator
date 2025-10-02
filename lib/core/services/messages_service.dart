@@ -14,7 +14,7 @@ class MessagesService {
   static const String qrNotFound = "QR no encontrado o expirado";
   static const String qrValidationFailed = "Validación de QR fallida";
 
-  // Twilio / OTP
+  // Twilio
   static const String otpSendFailed = "Error al enviar el OTP";
   static const String otpVerifyFailed = "Error al verificar el OTP";
   static const String otpSent = "OTP enviado correctamente";
@@ -29,7 +29,7 @@ class MessagesService {
   static const String missingFields = "Por favor completa todos los campos";
   static const String accessDenied = "Acceso denegado";
 
-  // Mensajes de éxito
+  // Mensajes de exito
   static const String loginSuccess = "Login exitoso";
   static const String logoutSuccess = "Logout exitoso";
   static const String qrGenerated = "QR generado correctamente";

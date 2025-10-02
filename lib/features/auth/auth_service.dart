@@ -48,7 +48,7 @@ class AuthService {
 
         return {
           "valid": body['valid'] == true,
-          "token": newToken ?? token, // devolvemos token nuevo o el viejo
+          "token": newToken ?? token,
         };
       } else {
         return {"valid": false, "token": token};

@@ -5,6 +5,7 @@ import '../../../core/services/messages_service.dart';
 import '../../../core/utils/constants.dart';
 
 class UserService {
+
   // Obtener info del usuario
   static Future<Map<String, dynamic>> getUserInfo(String userId, String token) async {
     final url = "${Constants.baseUrl}/user/$userId";
@@ -16,13 +17,13 @@ class UserService {
     );
   }
 
-  // Enviar OTP (para recuperación de contraseña)
-  static Future<bool> sendOtp(String phoneOrEmail) async {
-    final url = "${Constants.baseUrl}/auth/send-otp"; // ajusta a tu endpoint real
+  // Enviar OTP
+  static Future<bool> sendOtp(String phone) async {
+    final url = "${Constants.baseUrl}/auth/send-otp"; 
 
     final response = await BaseService.post(
       url,
-      {"identifier": phoneOrEmail}, // puede ser teléfono o correo
+      {"identifier": phone}, 
       null,
       defaultErrorMessage: MessagesService.otpSendFailed,
     );
@@ -31,12 +32,12 @@ class UserService {
   }
 
   // Verificar OTP
-  static Future<bool> verifyOtp(String phoneOrEmail, String otp) async {
+  static Future<bool> verifyOtp(String phone, String otp) async {
     final url = "${Constants.baseUrl}/auth/verify-otp";
 
     final response = await BaseService.post(
       url,
-      {"identifier": phoneOrEmail, "otp": otp},
+      {"identifier": phone, "otp": otp},
       null,
       defaultErrorMessage: MessagesService.otpVerifyFailed,
     );
@@ -44,9 +45,9 @@ class UserService {
     return response["success"] == true;
   }
 
-  // Cambiar contraseña (requiere OTP previamente verificado en backend)
-  static Future<bool> changePassword(String phoneOrEmail, String password, String rePassword) async {
-    final url = "${Constants.baseUrl}/user/change-password/$phoneOrEmail";
+  // Cambiar contraseña
+  static Future<bool> changePassword(String phone, String password, String rePassword) async {
+    final url = "${Constants.baseUrl}/user/change-password/$phone";
 
     final response = await BaseService.post(
       url,

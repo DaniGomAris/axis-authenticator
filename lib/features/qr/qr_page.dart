@@ -4,8 +4,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:http/http.dart' as http;
-import '../../../../core/utils/constants.dart';
 import 'package:barcode_widget/barcode_widget.dart';
+import '../../core/utils/constants.dart';
 
 class QRPage extends StatefulWidget {
   final String token;
@@ -138,6 +138,7 @@ class _QRPageState extends State<QRPage> {
         backgroundColor: const Color(0xFF0b1014),
         body: Stack(
           children: [
+            
             // Flecha para volver a home
             Positioned(
               top: 50,
@@ -152,7 +153,7 @@ class _QRPageState extends State<QRPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.arrow_back,
+                    Icons.chevron_left,
                     color: Colors.white,
                     size: 30,
                   ),
@@ -178,7 +179,7 @@ class _QRPageState extends State<QRPage> {
                 width: 220,
                 alignment: Alignment.centerLeft,
                 decoration: BoxDecoration(
-                  color: Colors.grey[800],
+                  color: Color(0xFF25292e),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: FractionallySizedBox(
@@ -349,7 +350,7 @@ class _QRPageState extends State<QRPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_left, color: Colors.white, size: 40),
+                      icon: const Icon(Icons.chevron_left, color: Colors.white, size: 30),
                       onPressed: () => _toggleMode(!showCompanyName),
                     ),
                     Text(
@@ -363,7 +364,7 @@ class _QRPageState extends State<QRPage> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.arrow_right, color: Colors.white, size: 40),
+                      icon: const Icon(Icons.chevron_right, color: Colors.white, size: 30),
                       onPressed: () => _toggleMode(!showCompanyName),
                     ),
                   ],
@@ -371,7 +372,7 @@ class _QRPageState extends State<QRPage> {
               ),
             ),
 
-            // Código de barras
+            // Codigo de barras
             Positioned(
               top: 820,
               left: screenWidth / 2 - 150,
